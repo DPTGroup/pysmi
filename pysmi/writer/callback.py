@@ -8,6 +8,7 @@ import sys
 from pysmi.writer.base import AbstractWriter
 from pysmi import debug
 from pysmi import error
+from pysmi.compat import decode
 
 
 class CallbackWriter(AbstractWriter):
@@ -48,5 +49,18 @@ class CallbackWriter(AbstractWriter):
 
         debug.logger & debug.flagWriter and debug.logger('user callback for %s succeeded' % mibname)
 
-    def getData(self, filename):
-        return ''
+    def getData(self, mibname):
+        filename = decode(mibname)
+
+        f = None
+
+        try:
+            f = open(filename)
+            data = f.read()
+            f.close()
+            return data
+
+        except (OSError, IOError, UnicodeEncodeError):
+            if f:
+                f.close()
+            return ''
